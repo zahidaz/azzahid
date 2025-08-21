@@ -62,16 +62,27 @@
 <body>
     <header>
         <nav class="container">
-            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+            <input type="checkbox" id="mobile-menu-toggle" class="mobile-menu-checkbox" aria-label="Toggle mobile menu">
+            <label for="mobile-menu-toggle" class="mobile-menu-toggle">
                 <span></span>
                 <span></span>
                 <span></span>
-            </button>
+            </label>
             <ul class="nav-links">
-                <li><a href="#hero" class="nav-item"><i class="fas fa-home"></i>Home</a></li>
-                <li><a href="#contact" class="nav-item"><i class="fas fa-envelope"></i>Contact</a></li>
-                <li><a href="https://blog.azzahid.com" target="_blank" rel="noopener noreferrer" class="nav-item"><i class="fas fa-blog"></i>Blog <i class="fas fa-external-link-alt external-icon"></i></a></li>
-                <li><a href="https://vero.co/zahidaz" class="nav-item"><i class="fas fa-camera"></i>Photography <i class="fas fa-external-link-alt external-icon"></i></a></li>
+                <li><a href="#hero" class="nav-item">
+                    <i class="fas fa-home" aria-hidden="true"></i>Home
+                </a></li>
+                <li><a href="#contact" class="nav-item">
+                    <i class="fas fa-envelope" aria-hidden="true"></i>Contact
+                </a></li>
+                <li><a href="https://blog.azzahid.com" rel="noopener noreferrer" class="nav-item">
+                    <i class="fas fa-blog" aria-hidden="true"></i>Blog 
+                    <i class="fas fa-external-link-alt external-icon" aria-hidden="true"></i>
+                </a></li>
+                <li><a href="https://vero.co/zahidaz" rel="noopener noreferrer" class="nav-item">
+                    <i class="fas fa-camera" aria-hidden="true"></i>Photography 
+                    <i class="fas fa-external-link-alt external-icon" aria-hidden="true"></i>
+                </a></li>
             </ul>
         </nav>
     </header>
@@ -80,17 +91,46 @@
     <main>
         <section class="section hero" id="hero">
             <div class="container">
-                <h1 class="fade-in">ZAHID</h1>
-                <p class="fade-in">Security Software Engineer | Mobile Security Researcher | Reverse Engineer</p>
-                <div class="monitor fade-in">
+                <h1 class="animate">ZAHID</h1>
+                <p class="animate">Security Software Engineer | Mobile Security Researcher | Reverse Engineer</p>
+                <div class="monitor animate">
                     <div class="monitor-frame">
                         <div class="monitor-screen">
+                            <div class="terminal-header">
+                                <div class="header-left">
+                                    <div class="progress-container">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-fill"></div>
+                                            <div class="progress-text" id="progress-text">0%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="header-center">
+                                    <button class="fullscreen-toggle" id="fullscreen-toggle" aria-label="Toggle fullscreen">
+                                        <i class="fas fa-expand" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="header-right">
+                                    <div class="company-logo">ZAHID</div>
+                                </div>
+                            </div>
                             <div class="scanlines"></div>
                             <div id="matrix-container"></div>
-                                <div class="lumon-message">
-                                    <!-- <h3>Presence Registered.</h3> -->
-                                    <h3>Use this workstation on a sanctioned display with a cursor for optimal function.</h3>
+                            <div class="company-message">
+                                <h3>Please enjoy this workstation on a generously sized display with a lively, obedient cursor.</h3>
+                            </div>
+                            <div class="completion-celebration" id="completion-celebration" style="display: none;">
+                                <div class="celebration-content">
+                                    <h2>CONGRATULATIONS</h2>
+                                    <p>Your rigor, vision, and alignment with truth have yielded reward. In your pursuit of excellence, you have identified a rare talent. This recognition reflects the strength of your evaluation and the wisdom of your stewardship.</p>
+                                    <div class="hiring-prompt">
+                                        <p>It is now your privilege—and obligation—to progress to the next phase.</p>
+                                        <a href="#contact" class="hire-button" id="hire-button">PROCEED TO HIRE ZAHID</a>
+                                    </div>
                                 </div>
+                            </div>
+                            <div class="terminal-footer">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -102,36 +142,36 @@
         <section class="section contact" id="contact">
             <div class="container">
                 <div class="section-content">
-                    <h2 class="fade-in">Contact & Links</h2>
-                    <p class="fade-in">Professional network, code repositories, creative work, and video content</p>
-                    <div class="contact-grid fade-in">
-                        <a href="https://github.com/zahidaz" target="_blank" rel="noopener noreferrer" class="terminal-button">
-                            <i class="fab fa-github button-icon"></i>
+                    <h2 class="animate">Contact & Links</h2>
+                    <p class="animate">Professional network, code repositories, creative work, and video content</p>
+                    <div class="contact-grid animate">
+                        <a href="https://github.com/zahidaz" rel="noopener noreferrer" class="terminal-button slide-in-left" data-platform="github">
+                            <i class="fab fa-github button-icon" aria-hidden="true"></i>
                             GitHub
                             <div class="button-subtitle">Python security tools & projects</div>
                         </a>
-                        <a href="https://www.linkedin.com/in/az-zahid/" target="_blank" rel="noopener noreferrer" class="terminal-button">
-                            <i class="fab fa-linkedin button-icon"></i>
+                        <a href="https://www.linkedin.com/in/az-zahid/" rel="noopener noreferrer" class="terminal-button fade-in-scale" data-platform="linkedin">
+                            <i class="fab fa-linkedin button-icon" aria-hidden="true"></i>
                             LinkedIn
                             <div class="button-subtitle">Professional networking</div>
                         </a>
-                        <a href="https://blog.azzahid.com" target="_blank" rel="noopener noreferrer" class="terminal-button">
-                            <i class="fas fa-blog button-icon"></i>
+                        <a href="https://blog.azzahid.com" rel="noopener noreferrer" class="terminal-button slide-in-right" data-platform="blog">
+                            <i class="fas fa-blog button-icon" aria-hidden="true"></i>
                             Technical Blog
                             <div class="button-subtitle">Security insights & tutorials</div>
                         </a>
-                        <a href="https://vero.co/zahidaz" target="_blank" rel="noopener noreferrer" class="terminal-button">
-                            <i class="fas fa-camera button-icon"></i>
+                        <a href="https://vero.co/zahidaz" rel="noopener noreferrer" class="terminal-button slide-in-left" data-platform="photography">
+                            <i class="fas fa-camera button-icon" aria-hidden="true"></i>
                             Photography
                             <div class="button-subtitle">Creative visual portfolio</div>
                         </a>
-                        <a href="https://www.youtube.com/@OfTimeAndTerrain" target="_blank" rel="noopener noreferrer" class="terminal-button">
-                            <i class="fab fa-youtube button-icon"></i>
+                        <a href="https://www.youtube.com/@OfTimeAndTerrain" rel="noopener noreferrer" class="terminal-button fade-in-up" data-platform="youtube">
+                            <i class="fab fa-youtube button-icon" aria-hidden="true"></i>
                             Time & Terrain
                             <div class="button-subtitle">Travel & exploration content</div>
                         </a>
-                        <a href="https://www.youtube.com/@xahidx" target="_blank" rel="noopener noreferrer" class="terminal-button">
-                            <i class="fab fa-youtube button-icon"></i>
+                        <a href="https://www.youtube.com/@xahidx" rel="noopener noreferrer" class="terminal-button slide-in-right" data-platform="youtube">
+                            <i class="fab fa-youtube button-icon" aria-hidden="true"></i>
                             xahidx
                             <div class="button-subtitle">Technical & security content</div>
                         </a>
