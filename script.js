@@ -172,7 +172,6 @@ function initMatrixEffect() {
         }
     }
     
-    
     function showSkill(clickX, clickY, skill) {
         
         if (currentSkillElement && currentSkillElement.parentNode) {
@@ -303,9 +302,7 @@ function initMatrixEffect() {
     
     createMatrixGrid();
     animate();
-    
-    
-    
+
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
