@@ -1,383 +1,359 @@
-document.addEventListener('DOMContentLoaded', function() {
-    initScrollAnimations();
-    initMatrixEffect();
-    initMobileMenu();
-});
-
-function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.fade-in').forEach(el => {
-        observer.observe(el);
-    });
-}
-
-function initMatrixEffect() {
-    const matrixContainer = document.getElementById('matrix-container');
-    if (!matrixContainer) return;
-    
-
-    const skills = [
-        'PYTHON',
-        'FASTAPI',
-        'DOCKER',
-        'KUBERNETES',
-        'OWASP MASVS',
-        'OWASP MASTG',
-        'MOBILE SECURITY',
-        'REVERSE ENGINEERING',
-        'FRIDA',
-        'GHIDRA',
-        'IDA PRO',
-        'BURP SUITE',
-        'POSTGRESQL',
-        'MICROSERVICES',
-        'MACHINE LEARNING',
-        'VULNERABILITY RESEARCH',
-        'PENETRATION TESTING',
-        'MALWARE ANALYSIS',
-        'CRYPTOGRAPHY',
-        'API SECURITY',
-        'AUTOMATED TESTING',
-        'DISTRIBUTED SYSTEMS',
-        'CELERY',
-        'RABBITMQ',
-        'SAST',
-        'DAST',
-        'JWT',
-        'OAUTH',
-        'TLS/SSL',
-        'PROMETHEUS',
-        'GRAFANA'
+const App = (() => {
+    const SKILLS = [
+        'PYTHON', 'FASTAPI', 'DOCKER', 'KUBERNETES', 'OWASP MASVS', 'OWASP MASTG',
+        'MOBILE SECURITY', 'REVERSE ENGINEERING', 'FRIDA', 'GHIDRA', 'IDA PRO',
+        'BURP SUITE', 'POSTGRESQL', 'MICROSERVICES', 'MACHINE LEARNING',
+        'VULNERABILITY RESEARCH', 'PENETRATION TESTING', 'MALWARE ANALYSIS',
+        'CRYPTOGRAPHY', 'API SECURITY', 'AUTOMATED TESTING', 'DISTRIBUTED SYSTEMS',
+        'CELERY', 'RABBITMQ', 'SAST', 'DAST', 'JWT', 'OAUTH', 'TLS/SSL',
+        'PROMETHEUS', 'GRAFANA'
     ];
 
-    let matrixNumbers = [];
-    let mouseX = 0;
-    let mouseY = 0;
-    let currentSkillElement = null;
-    
-    
-    function createMatrixGrid() {
-        const containerRect = matrixContainer.getBoundingClientRect();
-        
-        
-        let cellSize;
-        if (window.innerWidth < 768) {
-            cellSize = 35; 
-        } else if (window.innerWidth < 1024) {
-            cellSize = 42; 
-        } else {
-            cellSize = 48; 
+    const CONFIG = {
+        scroll: { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+        matrix: {
+            cellSizes: { mobile: 35, tablet: 42, desktop: 48 },
+            animation: { baseAmplitude: 0.6, lerpFactor: 0.15, maxDistance: 200 },
+            skill: { displayTime: 3000, fadeTime: 300 }
+        },
+        mobile: { breakpoint: 768, tabletBreakpoint: 1024 }
+    };
+
+    const ScrollAnimations = {
+        init() {
+            const observer = new IntersectionObserver(
+                entries => entries.forEach(entry => entry.isIntersecting && entry.target.classList.add('visible')),
+                CONFIG.scroll
+            );
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
         }
-        
-        let cols = Math.floor(containerRect.width / cellSize);
-        let rows = Math.floor(containerRect.height / cellSize);
-        
-        
-        if (containerRect.width - (cols * cellSize) > cellSize * 0.5) {
-            cols += 1;
+    };
+
+    const Utils = {
+        debounce(func, wait) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        },
+
+        getCellSize() {
+            const { innerWidth } = window;
+            const { mobile, tablet, desktop } = CONFIG.matrix.cellSizes;
+            return innerWidth < CONFIG.mobile.breakpoint ? mobile 
+                 : innerWidth < CONFIG.mobile.tabletBreakpoint ? tablet : desktop;
+        },
+
+        removeElement(element) {
+            element?.parentNode?.removeChild(element);
         }
-        if (containerRect.height - (rows * cellSize) > cellSize * 0.5) {
-            rows += 1;
-        }
-        
-        
-        const actualCellWidth = containerRect.width / cols;
-        const actualCellHeight = containerRect.height / rows;
-        
-        matrixContainer.innerHTML = '';
-        matrixNumbers = [];
-        
-        
-        function generateNumber(row, col, grid) {
-            let attempts = 0;
-            let num;
+    };
+
+    const MatrixEffect = {
+        container: null,
+        numbers: [],
+        mouse: { x: 0, y: 0 },
+        currentSkill: null,
+        skillTimeout: null,
+
+        init() {
+            this.container = document.getElementById('matrix-container');
+            if (!this.container) return;
+
+            this.createGrid();
+            this.animate();
+            this.bindEvents();
+        },
+
+        createGrid() {
+            const rect = this.container.getBoundingClientRect();
+            const cellSize = Utils.getCellSize();
+            
+            let cols = Math.floor(rect.width / cellSize);
+            let rows = Math.floor(rect.height / cellSize);
+            
+            if (rect.width - (cols * cellSize) > cellSize * 0.5) cols++;
+            if (rect.height - (rows * cellSize) > cellSize * 0.5) rows++;
+            
+            const cellWidth = rect.width / cols;
+            const cellHeight = rect.height / rows;
+            
+            this.container.innerHTML = '';
+            this.numbers = [];
+            
+            this.generateNumberGrid(rows, cols, cellWidth, cellHeight);
+        },
+
+        generateNumberGrid(rows, cols, cellWidth, cellHeight) {
+            const grid = [];
+            
+            for (let row = 0; row < rows; row++) {
+                grid[row] = [];
+                for (let col = 0; col < cols + 1; col++) {
+                    const number = this.createNumberElement(row, col, grid, cellWidth, cellHeight);
+                    this.container.appendChild(number.element);
+                    this.numbers.push(number);
+                }
+            }
+            return grid;
+        },
+
+        createNumberElement(row, col, grid, cellWidth, cellHeight) {
+            const element = document.createElement('div');
+            element.className = 'matrix-number';
+            
+            const num = this.generateUniqueNumber(row, col, grid);
+            element.textContent = num;
+            grid[row][col] = num;
+            
+            const x = col * cellWidth + cellWidth / 2;
+            const y = row * cellHeight + cellHeight / 2;
+            
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            
+            return {
+                element, x, y,
+                targetOffset: { x: 0, y: 0 },
+                currentOffset: { x: 0, y: 0 },
+                targetScale: 1, currentScale: 1,
+                nextUpdateTime: Date.now() + Math.random() * 200
+            };
+        },
+
+        generateUniqueNumber(row, col, grid) {
+            const neighbors = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
             const forbidden = new Set();
             
-            
-            const neighbors = [
-                [-1, -1], [-1, 0], [-1, 1], 
-                [0, -1],           [0, 1],  
-                [1, -1],  [1, 0],  [1, 1]   
-            ];
-            
-            for (let [dr, dc] of neighbors) {
-                const newRow = row + dr;
-                const newCol = col + dc;
+            neighbors.forEach(([dr, dc]) => {
+                const newRow = row + dr, newCol = col + dc;
                 if (newRow >= 0 && newRow < grid.length && 
-                    newCol >= 0 && grid[newRow] && newCol < grid[newRow].length) {
-                    if (grid[newRow][newCol] !== undefined) {
-                        forbidden.add(grid[newRow][newCol]);
-                    }
+                    newCol >= 0 && grid[newRow] && newCol < grid[newRow].length &&
+                    grid[newRow][newCol] !== undefined) {
+                    forbidden.add(grid[newRow][newCol]);
                 }
-            }
+            });
             
-            
+            let num, attempts = 0;
             do {
                 num = Math.floor(Math.random() * 10);
-                attempts++;
-            } while (attempts < 20 && forbidden.has(num));
+            } while (attempts++ < 20 && forbidden.has(num));
             
             return num;
-        }
-        
-        
-        const numberGrid = [];
-        
-        for (let row = 0; row < rows; row++) {
-            numberGrid[row] = [];
-            for (let col = 0; col < cols; col++) {
-                const number = document.createElement('div');
-                number.className = 'matrix-number';
-                
-                
-                const generatedNum = generateNumber(row, col, numberGrid);
-                number.textContent = generatedNum;
-                numberGrid[row][col] = generatedNum;
-                
-                const x = col * actualCellWidth + actualCellWidth / 2;
-                const y = row * actualCellHeight + actualCellHeight / 2;
-                
-                number.style.left = x + 'px';
-                number.style.top = y + 'px';
-                
-                matrixContainer.appendChild(number);
-                matrixNumbers.push({
-                    element: number,
-                    x: x,
-                    y: y,
-                    originalX: x,
-                    originalY: y,
-                    baseNumber: number.textContent,
-                    targetOffsetX: 0,
-                    targetOffsetY: 0,
-                    currentOffsetX: 0,
-                    currentOffsetY: 0,
-                    targetScale: 1,
-                    currentScale: 1,
-                    nextUpdateTime: Date.now() + Math.random() * 200
-                });
+        },
+
+        showSkill(x, y) {
+            if (this.skillTimeout) {
+                clearTimeout(this.skillTimeout);
+                this.skillTimeout = null;
             }
-        }
-    }
-    
-    function showSkill(clickX, clickY, skill) {
-        
-        if (currentSkillElement && currentSkillElement.parentNode) {
-            currentSkillElement.style.opacity = '0';
-            currentSkillElement.style.transform = 'scale(0.8)';
+            
+            this.hideCurrentSkill(true);
+            
+            const element = document.createElement('div');
+            element.className = 'skill-reveal';
+            element.textContent = SKILLS[Math.floor(Math.random() * SKILLS.length)];
+            
+            const offsetX = 30 + Math.random() * 20;
+            const offsetY = -20 - Math.random() * 20;
+            
+            Object.assign(element.style, {
+                left: `${x + offsetX}px`,
+                top: `${y + offsetY}px`,
+                pointerEvents: 'none'
+            });
+            
+            this.container.appendChild(element);
+            this.currentSkill = element;
+            
+            requestAnimationFrame(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'scale(1)';
+            });
+            
+            this.skillTimeout = setTimeout(() => this.hideCurrentSkill(), CONFIG.matrix.skill.displayTime);
+        },
+
+        hideCurrentSkill(immediate = false) {
+            if (!this.currentSkill?.parentNode) return;
+            
+            if (immediate) {
+                Utils.removeElement(this.currentSkill);
+                this.currentSkill = null;
+                return;
+            }
+            
+            const skillToHide = this.currentSkill;
+            
+            Object.assign(skillToHide.style, {
+                opacity: '0',
+                transform: 'scale(0.8)'
+            });
+            
             setTimeout(() => {
-                if (currentSkillElement && currentSkillElement.parentNode) {
-                    currentSkillElement.parentNode.removeChild(currentSkillElement);
-                }
-            }, 300);
-        }
-        
-        const skillElement = document.createElement('div');
-        skillElement.className = 'skill-reveal';
-        skillElement.textContent = skill;
-        
-        
-        const offsetX = 30 + Math.random() * 20; 
-        const offsetY = -20 - Math.random() * 20; 
-        
-        skillElement.style.left = (clickX + offsetX) + 'px';
-        skillElement.style.top = (clickY + offsetY) + 'px';
-        
-        matrixContainer.appendChild(skillElement);
-        currentSkillElement = skillElement;
-        
-        setTimeout(() => {
-            skillElement.style.opacity = '1';
-            skillElement.style.transform = 'scale(1)';
-        }, 10);
-        
-        setTimeout(() => {
-            if (skillElement.parentNode && skillElement === currentSkillElement) {
-                skillElement.style.opacity = '0';
-                skillElement.style.transform = 'scale(0.8)';
-                setTimeout(() => {
-                    if (skillElement.parentNode && skillElement === currentSkillElement) {
-                        skillElement.parentNode.removeChild(skillElement);
-                        currentSkillElement = null;
+                if (skillToHide.parentNode) {
+                    Utils.removeElement(skillToHide);
+                    if (this.currentSkill === skillToHide) {
+                        this.currentSkill = null;
                     }
-                }, 300);
-            }
-        }, 3000);
-    }
-    
-    
-    function handleMouseMove(event) {
-        const rect = matrixContainer.getBoundingClientRect();
-        mouseX = event.clientX - rect.left;
-        mouseY = event.clientY - rect.top;
-    }
-    
-    
-    function updateMatrixNumbers() {
-        const currentTime = Date.now();
-        const baseAmplitude = 0.6; 
-        
-        matrixNumbers.forEach(num => {
-            
-            if (currentTime >= num.nextUpdateTime) {
-                
-                num.targetOffsetX = (Math.random() - 0.5) * baseAmplitude;
-                num.targetOffsetY = (Math.random() - 0.5) * baseAmplitude;
-                
-                
-                num.targetScale = 1.0 + (Math.random() * 0.1);
-                
-                
-                num.nextUpdateTime = currentTime + 100 + Math.random() * 200;
-            }
-            
-            
-            const lerpFactor = 0.15; 
-            num.currentOffsetX += (num.targetOffsetX - num.currentOffsetX) * lerpFactor;
-            num.currentOffsetY += (num.targetOffsetY - num.currentOffsetY) * lerpFactor;
-            num.currentScale += (num.targetScale - num.currentScale) * lerpFactor;
-            
-            
-            const dx = mouseX - num.x;
-            const dy = mouseY - num.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const maxDistance = 200; 
-            
-            let finalOffsetX = num.currentOffsetX;
-            let finalOffsetY = num.currentOffsetY;
-            let finalScale = num.currentScale;
-            let opacity = 0.6;
-            
-            if (distance < maxDistance) {
-                const influence = 1 - (distance / maxDistance);
-                const mouseScale = 1 + (influence * 1.2); 
-                const mouseOffsetX = (dx / distance) * influence * 25; 
-                const mouseOffsetY = (dy / distance) * influence * 25;
-                
-                finalOffsetX += mouseOffsetX;
-                finalOffsetY += mouseOffsetY;
-                finalScale = Math.max(finalScale, mouseScale);
-                opacity = 0.3 + (influence * 0.7); 
-            }
-            
-            num.element.style.transform = `translate(${finalOffsetX}px, ${finalOffsetY}px) scale(${finalScale})`;
-            num.element.style.opacity = opacity;
-        });
-    }
-    
-    
-    function animate() {
-        updateMatrixNumbers();
-        requestAnimationFrame(animate);
-    }
-    
-    
-    matrixContainer.addEventListener('mousemove', handleMouseMove);
-    matrixContainer.addEventListener('mouseleave', () => {
-        mouseX = -9999;
-        mouseY = -9999;
-    });
-    
-    
-    matrixContainer.addEventListener('click', (event) => {
-        const rect = matrixContainer.getBoundingClientRect();
-        const clickX = event.clientX - rect.left;
-        const clickY = event.clientY - rect.top;
-        const randomSkill = skills[Math.floor(Math.random() * skills.length)];
-        showSkill(clickX, clickY, randomSkill);
-    });
-    
-    
-    createMatrixGrid();
-    animate();
+                }
+            }, CONFIG.matrix.skill.fadeTime);
+        },
 
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(createMatrixGrid, 200);
-    });
-}
+        updateNumbers() {
+            const currentTime = Date.now();
+            const { baseAmplitude, lerpFactor, maxDistance } = CONFIG.matrix.animation;
+            
+            this.numbers.forEach(num => {
+                if (currentTime >= num.nextUpdateTime) {
+                    num.targetOffset.x = (Math.random() - 0.5) * baseAmplitude;
+                    num.targetOffset.y = (Math.random() - 0.5) * baseAmplitude;
+                    num.targetScale = 1.0 + (Math.random() * 0.1);
+                    num.nextUpdateTime = currentTime + 100 + Math.random() * 200;
+                }
+                
+                num.currentOffset.x += (num.targetOffset.x - num.currentOffset.x) * lerpFactor;
+                num.currentOffset.y += (num.targetOffset.y - num.currentOffset.y) * lerpFactor;
+                num.currentScale += (num.targetScale - num.currentScale) * lerpFactor;
+                
+                const dx = this.mouse.x - num.x;
+                const dy = this.mouse.y - num.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                let { x: finalX, y: finalY } = num.currentOffset;
+                let finalScale = num.currentScale;
+                let opacity = 0.6;
+                
+                if (distance < maxDistance) {
+                    const influence = 1 - (distance / maxDistance);
+                    finalX += (dx / distance) * influence * 25;
+                    finalY += (dy / distance) * influence * 25;
+                    finalScale = Math.max(finalScale, 1 + (influence * 1.2));
+                    opacity = 0.3 + (influence * 0.7);
+                }
+                
+                Object.assign(num.element.style, {
+                    transform: `translate(${finalX}px, ${finalY}px) scale(${finalScale})`,
+                    opacity
+                });
+            });
+        },
 
-function initMobileMenu() {
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    const navLinkItems = document.querySelectorAll('.nav-links a');
+        animate() {
+            this.updateNumbers();
+            requestAnimationFrame(() => this.animate());
+        },
 
-    function toggleMenu() {
-        mobileMenuToggle.classList.toggle('active');
-        navLinks.classList.toggle('active');
-        
-        const isExpanded = navLinks.classList.contains('active');
-        mobileMenuToggle.setAttribute('aria-expanded', isExpanded);
-        
-        if (isExpanded) {
-            navLinkItems[0]?.focus();
+        bindEvents() {
+            this.container.addEventListener('mousemove', e => {
+                const rect = this.container.getBoundingClientRect();
+                this.mouse.x = e.clientX - rect.left;
+                this.mouse.y = e.clientY - rect.top;
+            });
+
+            this.container.addEventListener('mouseleave', () => {
+                this.mouse.x = this.mouse.y = -9999;
+            });
+
+            this.container.addEventListener('click', e => {
+                const rect = this.container.getBoundingClientRect();
+                this.showSkill(e.clientX - rect.left, e.clientY - rect.top);
+            });
+
+            window.addEventListener('resize', Utils.debounce(() => this.createGrid(), 200));
         }
-    }
+    };
 
-    function closeMenu() {
-        mobileMenuToggle.classList.remove('active');
-        navLinks.classList.remove('active');
-        mobileMenuToggle.setAttribute('aria-expanded', 'false');
-    }
+    const MobileMenu = {
+        toggle: null,
+        nav: null,
+        links: null,
 
-    mobileMenuToggle.addEventListener('click', toggleMenu);
+        init() {
+            this.toggle = document.querySelector('.mobile-menu-toggle');
+            this.nav = document.querySelector('.nav-links');
+            this.links = document.querySelectorAll('.nav-links a');
+            
+            if (!this.toggle || !this.nav) return;
+            
+            this.bindEvents();
+        },
 
-    mobileMenuToggle.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleMenu();
-        }
-    });
+        toggleMenu() {
+            const isActive = this.nav.classList.toggle('active');
+            this.toggle.classList.toggle('active', isActive);
+            this.toggle.setAttribute('aria-expanded', isActive);
+            
+            if (isActive) this.links[0]?.focus();
+        },
 
-    navLinks.addEventListener('keydown', function(e) {
-        const focusableItems = Array.from(navLinkItems);
-        const currentIndex = focusableItems.indexOf(document.activeElement);
-        
-        switch(e.key) {
-            case 'Escape':
+        closeMenu() {
+            this.toggle.classList.remove('active');
+            this.nav.classList.remove('active');
+            this.toggle.setAttribute('aria-expanded', 'false');
+        },
+
+        handleKeydown(e) {
+            const focusableItems = Array.from(this.links);
+            const currentIndex = focusableItems.indexOf(document.activeElement);
+            
+            const actions = {
+                Escape: () => {
+                    this.closeMenu();
+                    this.toggle.focus();
+                },
+                ArrowDown: () => {
+                    const nextIndex = (currentIndex + 1) % focusableItems.length;
+                    focusableItems[nextIndex]?.focus();
+                },
+                ArrowUp: () => {
+                    const prevIndex = currentIndex === 0 ? focusableItems.length - 1 : currentIndex - 1;
+                    focusableItems[prevIndex]?.focus();
+                }
+            };
+
+            if (actions[e.key]) {
                 e.preventDefault();
-                closeMenu();
-                mobileMenuToggle.focus();
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                const nextIndex = (currentIndex + 1) % focusableItems.length;
-                focusableItems[nextIndex]?.focus();
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                const prevIndex = currentIndex === 0 ? focusableItems.length - 1 : currentIndex - 1;
-                focusableItems[prevIndex]?.focus();
-                break;
-        }
-    });
+                actions[e.key]();
+            }
+        },
 
-    navLinkItems.forEach(link => {
-        link.addEventListener('click', closeMenu);
-    });
+        bindEvents() {
+            this.toggle.addEventListener('click', () => this.toggleMenu());
+            
+            this.toggle.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.toggleMenu();
+                }
+            });
 
-    document.addEventListener('click', function(event) {
-        if (!navLinks.contains(event.target) && !mobileMenuToggle.contains(event.target) && navLinks.classList.contains('active')) {
-            closeMenu();
-        }
-    });
+            this.nav.addEventListener('keydown', e => this.handleKeydown(e));
+            this.links.forEach(link => link.addEventListener('click', () => this.closeMenu()));
 
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768 && navLinks.classList.contains('active')) {
-            closeMenu();
+            document.addEventListener('click', e => {
+                if (!this.nav.contains(e.target) && !this.toggle.contains(e.target) && 
+                    this.nav.classList.contains('active')) {
+                    this.closeMenu();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > CONFIG.mobile.breakpoint && this.nav.classList.contains('active')) {
+                    this.closeMenu();
+                }
+            });
         }
-    });
-}
+    };
+
+    return {
+        init() {
+            ScrollAnimations.init();
+            MatrixEffect.init();
+            MobileMenu.init();
+        }
+    };
+})();
+
+document.addEventListener('DOMContentLoaded', () => App.init());
